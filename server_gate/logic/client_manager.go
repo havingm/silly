@@ -1,14 +1,25 @@
 package gate_logic
 
-import "silly/transport"
+import (
+	"silly/logger"
+	"silly/transport"
+	"sync"
+)
 
 type ClientManager struct {
+	linkTable sync.Map
 }
 
-func (mgr *ClientManager) OnLinkRecv(link *transport.TcpLink, data []byte) {
-	panic("implement me")
+func (mgr *ClientManager) OnLinkOpened(service *transport.TcpService, link *transport.TcpLink) {
+	logger.Info("OnlinkOpened: ", service, link)
+	mgr.linkTable.Store(link.GetLinkId(), link)
 }
 
-func (mgr *ClientManager) OnLinkClose(link *transport.TcpLink) {
-	panic("implement me")
+func (mgr *ClientManager) OnLinkClosed(service *transport.TcpService, link *transport.TcpLink) {
+	logger.Info("OnLinkClosed: ", service, link)
+	mgr.linkTable.Delete(link.GetLinkId())
+}
+
+func (mgr *ClientManager) OnLinkRecv(service *transport.TcpService, link *transport.TcpLink, data []byte) {
+	logger.Info("OnLinkRecv: ", service, link, data)
 }

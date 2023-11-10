@@ -3,6 +3,7 @@ package transport
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"silly/logger"
@@ -115,7 +116,6 @@ func (l *TcpLink) Run() {
 			dataLen := binary.LittleEndian.Uint32(lenBuf)
 			//ping 包
 			if dataLen == 0 {
-				logger.Info("收到ping包, linkId: ", l.linkId)
 				continue
 			}
 			//读取数据
@@ -232,4 +232,8 @@ func (l *TcpLink) Stop() {
 		logger.Warning("TcpLink.Stop timeout")
 		l.Close()
 	}
+}
+
+func (l *TcpLink) String() string {
+	return fmt.Sprintf("[TcpLink, Id: %v]", l.linkId)
 }

@@ -8,22 +8,61 @@ import (
 	"time"
 )
 
+type Option func(*Options)
+type Options struct {
+	Tag    string
+	Holder ITcpService
+}
+
+func NewOptions(opts ...Option) Options {
+	opt := Options{
+		Tag:    "Default",
+		Holder: nil,
+	}
+	for _, o := range opts {
+		o(&opt)
+	}
+	return opt
+}
+
+func WithTag(tag string) Option {
+	return func(o *Options) {
+		o.Tag = tag
+	}
+}
+
+func WithHolder(holder ITcpService) Option {
+	return func(o *Options) {
+		o.Holder = holder
+	}
+}
+
 type ITcpSocket interface {
 	OnLinkRecv(link *TcpLink, data []byte)
 	OnLinkClose(link *TcpLink)
 }
 
-type TcpService struct {
-	sync.Mutex
-	tag       string
-	listener  *net.TCPListener
-	linkTable sync.Map
-	deadline  time.Duration
-	close     chan struct{}
+type ITcpService interface {
+	OnLinkOpened(service *TcpService, link *TcpLink)
+	OnLinkClosed(service *TcpService, link *TcpLink)
+	OnLinkRecv(service *TcpService, link *TcpLink, data []byte)
 }
 
-func NewTcpService(tag string) *TcpService {
-	service := &TcpService{tag: tag}
+type TcpService struct {
+	sync.Mutex
+	tag      string
+	holder   ITcpService
+	listener *net.TCPListener
+	deadline time.Duration
+	close    chan struct{}
+}
+
+func NewTcpService(opts ...Option) *TcpService {
+	options := NewOptions(opts...)
+	service := &TcpService{
+		tag:    options.Tag,
+		holder: options.Holder,
+	}
 	return service
 }
 
@@ -57,13 +96,15 @@ func (s *TcpService) Stop() {
 }
 
 func (s *TcpService) OnLinkRecv(link *TcpLink, data []byte) {
-	logger.Info("OnLinkRecv, linkId:", link.linkId, " 客户端发来: ", string(data))
-	link.Send(data)
+	if s.holder != nil {
+		s.holder.OnLinkRecv(s, link, data)
+	}
 }
 
 func (s *TcpService) OnLinkClose(link *TcpLink) {
-	s.linkTable.Delete(link.linkId)
-	logger.Info("OnLinkClose, linkId: ", link.linkId)
+	if s.holder != nil {
+		s.holder.OnLinkClosed(s, link)
+	}
 }
 
 func (s *TcpService) CreateTcpLink(conn net.Conn) {
@@ -72,9 +113,10 @@ func (s *TcpService) CreateTcpLink(conn net.Conn) {
 	link := NewTcpLink(conn, s, 10)
 	link.readDeadline = s.deadline
 	link.linkId = AutoTcpLinkId()
-	s.linkTable.Store(link.linkId, link)
 	link.Run()
-
+	if s.holder != nil {
+		s.holder.OnLinkOpened(s, link)
+	}
 }
 
 func (s *TcpService) accept() error {
@@ -114,4 +156,7 @@ func (s *TcpService) run() {
 			}
 		}
 	}()
+}
+func (s *TcpService) String() string {
+	return fmt.Sprintf("[TcpService: %v]", s.tag)
 }

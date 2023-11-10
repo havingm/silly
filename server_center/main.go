@@ -3,11 +3,11 @@ package main
 import (
 	"bufio"
 	"os"
-	gate_logic "silly/server_gate/logic"
+	"silly/server_center/logic"
 )
 
 func main() {
-	gate_logic.Start()
+	center_logic.Start()
 	reader := bufio.NewReader(os.Stdin)
 	reader.ReadLine()
 }
