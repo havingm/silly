@@ -1,0 +1,12 @@
+option go_package="../src/msg";
+message T1{
+	required int32 I = 1;
+	required string S = 2;
+	required bool B = 3;
+}
+
+message T2{
+	repeated T1 R =  1;
+}
+
+
