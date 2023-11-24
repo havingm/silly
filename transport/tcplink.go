@@ -132,33 +132,33 @@ func (l *TcpLink) Run() {
 			l.service.OnLinkRecv(l, data)
 		}
 	}()
-	//ping
-	if l.pingTime > 0 {
-		pingBuf := make([]byte, 4)
-		binary.LittleEndian.PutUint32(pingBuf, 0)
-		go func() {
-			defer func() {
-				logger.Info("ping线程退出")
-				if r := recover(); r != nil {
-					logger.Error(r)
-					l.Close()
-				}
-			}()
-
-			l.RLock()
-			conn := l.conn
-			l.RUnlock()
-
-			for {
-				time.Sleep(l.pingTime)
-				_, err := conn.Write(pingBuf)
-				if err != nil {
-					l.Close()
-					return
-				}
-			}
-		}()
-	}
+	////ping
+	//if l.pingTime > 0 {
+	//	pingBuf := make([]byte, 4)
+	//	binary.LittleEndian.PutUint32(pingBuf, 0)
+	//	go func() {
+	//		defer func() {
+	//			logger.Info("ping线程退出")
+	//			if r := recover(); r != nil {
+	//				logger.Error(r)
+	//				l.Close()
+	//			}
+	//		}()
+	//
+	//		l.RLock()
+	//		conn := l.conn
+	//		l.RUnlock()
+	//
+	//		for {
+	//			time.Sleep(l.pingTime)
+	//			_, err := conn.Write(pingBuf)
+	//			if err != nil {
+	//				l.Close()
+	//				return
+	//			}
+	//		}
+	//	}()
+	//}
 }
 
 func (l *TcpLink) GetLinkId() uint64 {

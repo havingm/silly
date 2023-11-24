@@ -1,8 +1,6 @@
 package gate_logic
 
 import (
-	"bufio"
-	"os"
 	"silly/logger"
 	"silly/transport"
 )
@@ -32,6 +30,5 @@ func Start() {
 		logger.Error(err)
 		return
 	}
-	reader := bufio.NewReader(os.Stdin)
-	reader.ReadLine()
+	StartCommand()
 }
