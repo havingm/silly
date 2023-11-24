@@ -1,4 +1,4 @@
-package center_logic
+package server_sock5
 
 import (
 	"silly/logger"

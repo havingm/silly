@@ -45,7 +45,7 @@ type ITcpSocket interface {
 type ITcpService interface {
 	OnLinkOpened(service *TcpService, link *TcpLink)
 	OnLinkClosed(service *TcpService, link *TcpLink)
-	OnLinkRecv(service *TcpService, link *TcpLink, data []byte)
+	OnLinkRecved(service *TcpService, link *TcpLink, data []byte)
 }
 
 type TcpService struct {
@@ -97,7 +97,7 @@ func (s *TcpService) Stop() {
 
 func (s *TcpService) OnLinkRecv(link *TcpLink, data []byte) {
 	if s.holder != nil {
-		s.holder.OnLinkRecv(s, link, data)
+		s.holder.OnLinkRecved(s, link, data)
 	}
 }
 
