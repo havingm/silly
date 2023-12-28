@@ -14,7 +14,21 @@ var (
 	clientManager *ClientManager
 )
 
+//网关客户端对象
+type GatePlayer struct {
+	PlayerId uint64 //玩家Id(未登录时为0)
+	ConnId   uint64 //链接Id
+	AgentId  uint64 //对应的AgentId
+}
+
+type GateConn struct {
+	ConnId   uint64
+	PlayerId uint64
+}
+
 type Gate struct {
+	Players     map[uint64]*GatePlayer
+	Connections map[uint64]*GateConn
 }
 
 func Init() {

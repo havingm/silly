@@ -105,6 +105,18 @@ func (s *Sock5Proxy) getAddress(reader *bufio.Reader) (host string, port string)
 	if n != 4 || err != nil {
 		return
 	}
+	cmd := ""
+	switch b[1] {
+	case socks5CmdConnect:
+		cmd = "socks5CmdConnect"
+	case socks5CmdBind:
+		cmd = "socks5CmdBind"
+	case socks5CmdUdp:
+		cmd = "socks5CmdUdp"
+	default:
+		cmd = "socks5CmdUnknown"
+	}
+	logger.Info("[cmd:", cmd, "]")
 	if b[0] != socks5Version ||
 		(b[1] != socks5CmdConnect && b[1] != socks5CmdBind && b[1] != socks5CmdUdp) ||
 		b[2] != 0x00 {
@@ -123,7 +135,7 @@ func (s *Sock5Proxy) getAddress(reader *bufio.Reader) (host string, port string)
 			return
 		}
 		ipv4 := b[:4]
-		host = net.IPv4(ipv4[0], ipv4[1], ipv4[2], ipv4[3]).String()
+		host = net.IP(ipv4).String()
 		nport = int(b[4])<<8 + int(b[5])
 	case socks5Domain:
 		/*
@@ -152,7 +164,7 @@ func (s *Sock5Proxy) getAddress(reader *bufio.Reader) (host string, port string)
 			return
 		}
 		ipv6 := b[:16]
-		host = net.IP{ipv6[0], ipv6[1], ipv6[2], ipv6[3], ipv6[4], ipv6[5], ipv6[6], ipv6[7], ipv6[8], ipv6[9], ipv6[10], ipv6[11], ipv6[12], ipv6[13], ipv6[14], ipv6[15]}.String()
+		host = net.IP(ipv6).String()
 		nport = int(b[16])<<8 + int(b[17])
 	}
 	return host, strconv.Itoa(nport)
@@ -220,7 +232,6 @@ func (s *Sock5Proxy) run() {
 		defer func() {
 			if r := recover(); r != nil {
 				logger.Error(r)
-				logger.Error("Tcp服务发生错误退出")
 			}
 		}()
 		for {
