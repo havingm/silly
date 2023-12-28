@@ -1,0 +1,9 @@
+start game.exe 1 harbor1 127.0.0.1:8001
+start game.exe 2 harbor2 127.0.0.1:8002
+start game.exe 3 harbor3 127.0.0.1:8003
+start game.exe 4 harbor4 127.0.0.1:8004
+start game.exe 5 harbor5 127.0.0.1:8005
+start game.exe 6 harbor6 127.0.0.1:8006
+start game.exe 7 harbor7 127.0.0.1:8007
+start game.exe 8 harbor8 127.0.0.1:8008
+start game.exe 9 harbor9 127.0.0.1:8009

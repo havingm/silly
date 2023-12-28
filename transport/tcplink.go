@@ -1,7 +1,6 @@
 package transport
 
 import (
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
@@ -26,6 +25,7 @@ type TcpLink struct {
 	sendTimeout  time.Duration
 	pingTime     time.Duration
 	service      ITcpSocket
+	running      bool
 }
 
 type ITcpLink interface {
@@ -36,6 +36,7 @@ type ITcpLink interface {
 	RemoteIp() string
 	Close()
 	Stop()
+	IsRunning() bool
 }
 
 func NewTcpLink(conn net.Conn, service ITcpSocket, ping int) *TcpLink {
@@ -53,6 +54,7 @@ func (l *TcpLink) Run() {
 		logger.Error("TcpLink.Run, conn is nil...")
 		return
 	}
+	l.running = true
 	//数据写入
 	go func() {
 		defer func() {
@@ -113,8 +115,8 @@ func (l *TcpLink) Run() {
 				l.Close()
 				return
 			}
-			dataLen := binary.LittleEndian.Uint32(lenBuf)
-			//ping 包
+			dataLen := DefaultEndian.Uint32(lenBuf)
+			//ping 包RemoteCallHarborOnHello
 			if dataLen == 0 {
 				continue
 			}
@@ -172,6 +174,9 @@ func (l *TcpLink) Send(data []byte) error {
 	if data == nil {
 		return errors.New("TcpLink Send, data is nil")
 	}
+	if !l.running {
+		return errors.New("TcpLink is not running")
+	}
 	timeout := time.NewTimer(l.sendTimeout)
 	defer timeout.Stop()
 	pack := &NetPack{
@@ -203,6 +208,7 @@ func (l *TcpLink) RemoteIp() string {
 func (l *TcpLink) Close() {
 	l.Lock()
 	defer l.Unlock()
+	l.running = false
 	if l.conn == nil {
 		return
 	}
@@ -232,6 +238,10 @@ func (l *TcpLink) Stop() {
 		logger.Warning("TcpLink.Stop timeout")
 		l.Close()
 	}
+}
+
+func (l *TcpLink) IsRunning() bool {
+	return l.running
 }
 
 func (l *TcpLink) String() string {

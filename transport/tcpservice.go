@@ -86,6 +86,7 @@ func (s *TcpService) Stop() {
 	if s.close == nil {
 		return
 	}
+	s.listener.Close()
 	select {
 	case <-s.close:
 		//已经关闭了

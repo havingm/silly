@@ -11,7 +11,7 @@ type ServerManager struct {
 }
 
 func (mgr *ServerManager) OnLinkOpened(service *transport.TcpService, link *transport.TcpLink) {
-	logger.Info("OnlinkOpened: ", service, link)
+	logger.Info("OnLinkOpened: ", service, link)
 	mgr.linkTable.Store(link.GetLinkId(), link)
 }
 
@@ -21,5 +21,5 @@ func (mgr *ServerManager) OnLinkClosed(service *transport.TcpService, link *tran
 }
 
 func (mgr *ServerManager) OnLinkRecved(service *transport.TcpService, link *transport.TcpLink, data []byte) {
-	logger.Info("OnLinkRecv: ", service, link, data)
+	logger.Info("OnLinkRecved: ", service, link, data)
 }
